@@ -10,7 +10,7 @@ def start(update: Update, context: CallbackContext):
     update.message.reply_text("Welcome to SyncGram Alerts! Use /subscribe to start receiving call alerts.")
 
 def subscribe(update: Update, context: CallbackContext):
-    update.message.reply_text("Please send your phone number in the format +1234567890 to subscribe.")
+    update.message.reply_text("Please send me your phone number in the format +1234567890 to subscribe.")
 
 def handle_phone(update: Update, context: CallbackContext):
     phone_number = update.message.text.strip()
