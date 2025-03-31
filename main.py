@@ -6,8 +6,6 @@ import logging
 import nest_asyncio
 
 # Load environment variables from .env file
-load_dotenv()
-
 # Apply nest_asyncio so we can run our loop even if one is already running
 nest_asyncio.apply()
 
