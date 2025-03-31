@@ -2,10 +2,9 @@
 import os
 from twilio.rest import Client
 from dotenv import load_dotenv
-load_dotenv()
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "your_account_sid")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "your_auth_token")
-TWILIO_CALLER_ID = os.getenv("TWILIO_CALLER_ID", "+1234567890")
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_CALLER_ID = os.getenv("TWILIO_CALLER_ID")
 
 client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
