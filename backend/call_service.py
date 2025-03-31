@@ -1,7 +1,6 @@
 # backend/call_service.py
 import os
 from twilio.rest import Client
-from dotenv import load_dotenv
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_CALLER_ID = os.getenv("TWILIO_CALLER_ID")
