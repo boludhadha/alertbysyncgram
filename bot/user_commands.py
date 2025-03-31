@@ -6,13 +6,13 @@ from models.user import User
 from models.group import Group
 from models.call_subscription import CallAlertSubscription
 
-def start(update: Update, context: CallbackContext):
-    update.message.reply_text("Welcome to SyncGram Alerts! Use /subscribe to start receiving call alerts.")
+async def start(update: Update, context: CallbackContext):
+    await update.message.reply_text("Welcome to SyncGram Alerts! Use /subscribe to start receiving call alerts.")
 
-def subscribe(update: Update, context: CallbackContext):
-    update.message.reply_text("Please send me your phone number in the format +1234567890 to subscribe.")
+async def subscribe(update: Update, context: CallbackContext):
+    await update.message.reply_text("Please send your phone number in the format +1234567890 to subscribe.")
 
-def handle_phone(update: Update, context: CallbackContext):
+async def handle_phone(update: Update, context: CallbackContext):
     phone_number = update.message.text.strip()
     telegram_id = str(update.message.from_user.id)
     db = SessionLocal()
@@ -45,10 +45,10 @@ def handle_phone(update: Update, context: CallbackContext):
         db.add(subscription)
         db.commit()
     
-    update.message.reply_text("You have been subscribed to call alerts for this group!")
+    await update.message.reply_text("You have been subscribed to call alerts for this group!")
     db.close()
 
-def register_handlers(dispatcher):
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("subscribe", subscribe))
-    dispatcher.add_handler(MessageHandler(Filters.regex(r'^\+\d{10,15}$'), handle_phone))
+def register_handlers(application):
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("subscribe", subscribe))
+    application.add_handler(MessageHandler(filters.Regex(r'^\+\d{10,15}$'), handle_phone))
