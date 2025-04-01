@@ -19,7 +19,7 @@ def initiate_call_with_callback(number, message, retry_count=0):
     fully qualified and URL-encoded with query parameters.
     
     :param number: The phone number to call (e.g., +2348164603115)
-    :param message: The message to be spoken via TTS
+    :param message: The sage to be spoken via TTS
     :param retry_count: The current retry attempt count
     :return: The call SID if successful, otherwise None
     """
