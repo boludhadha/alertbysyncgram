@@ -4,9 +4,12 @@ import asyncio
 import uvicorn
 import logging
 import nest_asyncio
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
-# Apply nest_asyncio so we can run our loop even if one is already running
+load_dotenv()
+
+# Apply nest_asyncio so we can use asyncio.run() even if an event loop is already running
 nest_asyncio.apply()
 
 # Configure logging: INFO-level messages will be printed to console
@@ -58,10 +61,11 @@ async def main_telegram_bot():
     application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     
     logger.info("Starting Telegram bot polling for updates.")
-    await application.run_polling()
+    # Prevent the application from trying to close the running event loop by setting close_loop=False
+    await application.run_polling(close_loop=False)
 
 if __name__ == "__main__":
-    # Start FastAPI server in a separate thread
+    # Start the FastAPI server in a separate thread
     logger.info("Starting FastAPI server thread.")
     fastapi_thread = threading.Thread(target=start_fastapi, daemon=True)
     fastapi_thread.start()
