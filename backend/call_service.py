@@ -1,41 +1,35 @@
+# backend/call_service.py
 import os
-from urllib.parse import urlencode
 from twilio.rest import Client
-
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "your_account_sid")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "your_auth_token")
-TWILIO_CALLER_ID = os.getenv("TWILIO_CALLER_ID", "+1234567890")
-STATUS_CALLBACK_URL = os.getenv("TWILIO_STATUS_CALLBACK_URL", "https://alertbysyncgram-production.up.railway.app/twilio/callback")
-SIP_DOMAIN = os.getenv("SIP_DOMAIN", "syncgram.sip.twilio.com")
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_CALLER_ID = os.getenv("TWILIO_CALLER_ID")
 
 client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-def initiate_call_with_callback(number, message, retry_count=0):
+def initiate_call(to_phone: str, message: str) -> str:
     """
-    Initiates a call with a status callback. Builds a fully qualified, URL-encoded callback URL.
+    Initiate a voice call using Twilio with text-to-speech.
+    Returns the call SID if successful; otherwise, returns None.
     """
-    # Construct the SIP URI for outbound dialing.
-    sip_uri = f"sip:{number}@{SIP_DOMAIN}"
-    
-    # Build query parameters and URL-encode them.
-    params = urlencode({
-        "number": number,
-        "message": message,
-        "retry_count": retry_count
-    })
-    
-    full_status_callback = f"{STATUS_CALLBACK_URL}?{params}"
-    
     try:
         call = client.calls.create(
             twiml=f'<Response><Say voice="alice">{message}</Say></Response>',
-            to=sip_uri,
-            from_=TWILIO_CALLER_ID,
-            status_callback=full_status_callback,
-            status_callback_event=["initiated", "ringing", "answered", "completed"],
-            status_callback_method="POST"
+            to=to_phone,
+            from_=TWILIO_CALLER_ID
         )
         return call.sid
     except Exception as e:
-        print(f"Failed to initiate call to {number} (SIP URI {sip_uri}): {e}")
+        print(f"Failed to initiate call to {to_phone}: {e}")
         return None
+
+def broadcast_call(phone_numbers, message, retry_count=0):
+    """
+    Initiates calls to all phone_numbers with the given message.
+    Returns a dictionary mapping each phone number to its call SID.
+    """
+    call_sids = {}
+    for number in phone_numbers:
+        call_sid = initiate_call_with_callback(number, message, retry_count)
+        call_sids[number] = call_sid
+    return call_sids
