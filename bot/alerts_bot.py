@@ -13,7 +13,6 @@ async def start_alerts(update: Update, context: CallbackContext):
     await update.message.reply_text("Welcome to AlertsBySyncGram Bot! Checking your subscription data...")
 
     await database.connect()
-    # Retrieve subscriptions from the external database
     subs = await Subscription.objects.filter(user_id=user_id).all()
     await database.disconnect()
 
