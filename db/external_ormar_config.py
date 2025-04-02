@@ -1,6 +1,7 @@
 # db/external_ormar_config.py
 import os
-from sqlalchemy import create_engine, MetaData
+import sqlalchemy
+from sqlalchemy import create_engine
 from databases import Database
 
 # Retrieve the external database URL from the environment.
