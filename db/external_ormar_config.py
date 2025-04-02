@@ -1,21 +1,16 @@
+# db/external_ormar_config.py
 import os
-import sqlalchemy
-import databases
+from sqlalchemy import create_engine, MetaData
+from databases import Database
 
-# Get your external DB URL and ensure it starts with "postgresql://"
+# Retrieve the external database URL from the environment.
 EXTERNAL_DATABASE_URL = os.getenv("EXTERNAL_DATABASE_URL")
+# Ensure the URL uses the correct scheme.
+EXTERNAL_DATABASE_URL = str(EXTERNAL_DATABASE_URL).replace("postgres://", "postgresql://", 1)
 
-database = databases.Database(EXTERNAL_DATABASE_URL)
-metadata = sqlalchemy.MetaData()
+# Create the SQLAlchemy metadata and the asynchronous Database instance.
+metadata = MetaData()
+database = Database(EXTERNAL_DATABASE_URL)
 
-class OrmarConfig:
-    def __init__(self, metadata, database):
-        self.metadata = metadata
-        self.database = database
-
-    def copy(self, **kwargs):
-        config = {"metadata": self.metadata, "database": self.database}
-        config.update(kwargs)
-        return config
-
-base_ormar_config = OrmarConfig(metadata=metadata, database=database)
+# Create an engine if needed (for synchronous operations)
+engine = create_engine(EXTERNAL_DATABASE_URL)

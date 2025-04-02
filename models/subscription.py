@@ -1,10 +1,12 @@
 import datetime
-from typing import ClassVar
 import ormar
 from db.external_ormar_config import database, metadata
 
 class Subscription(ormar.Model):
-    ormar_config: ClassVar[dict] = {"metadata": metadata, "database": database, "tablename": "subscriptions"}
+    class Meta:
+        tablename = "subscriptions"
+        metadata = metadata
+        database = database
 
     id: int = ormar.Integer(primary_key=True, autoincrement=True)
     user_id: str = ormar.String(max_length=64)
