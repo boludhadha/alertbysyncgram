@@ -3,7 +3,7 @@ import logging
 from telegram import Update
 from telegram.ext import CallbackContext
 from utils.filters import is_signal_message
-from backend import alerts_bot
+from bot import alerts_bot
 
 logger = logging.getLogger(__name__)
 
