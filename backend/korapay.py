@@ -8,7 +8,7 @@ def initiate_korapay_payment(amount, subscription_id, redirect_url):
     
     :param amount: Payment amount (e.g., 1000 for ₦1000)
     :param subscription_id: The subscription ID to associate with this payment
-    :param redirect_url: URL to redirect the user after payment completion
+    :param redirect_url: URL to redir the user after payment completion
     :return: Payment URL as a string if successful, otherwise None.
     """
     # Replace this endpoint with the correct one from Korapay's documentation.
