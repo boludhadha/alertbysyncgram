@@ -7,7 +7,7 @@ from twilio.twiml.voice_response import VoiceResponse, Dial
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_CALLER_ID = os.getenv("TWILIO_CALLER_ID")
-STATUS_CALLBACK_URL = os.getenv("TWILIO_STATUS_CALLBACK_URL")  # Must include protocol, e.g., https://...
+STATUS_CALLBACK_URL = os.getenv("TWILIO_STATUS_CALLBACK_URL")  # Must be fully qualified, e.g., https://...
 DEFAULT_CONFERENCE = os.getenv("DEFAULT_CONFERENCE", "AlertConferenceRoom")
 TWILIO_WAIT_URL = os.getenv("TWILIO_WAIT_URL", None)
 
