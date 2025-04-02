@@ -1,6 +1,7 @@
+# bot/user_commands.py
 from telegram import Update
-from telegram.ext import CommandHandler, MessageHandler, filters, CallbackContext
-from db.database import SessionLocal
+from telegram.ext import CallbackContext
+from db.internal_database import SessionLocal
 from models.user import User
 from models.group import Group
 from models.call_subscription import CallAlertSubscription
@@ -10,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 async def start(update: Update, context: CallbackContext):
     logger.info("Received /start command from user: %s", update.effective_user.id)
-    await update.message.reply_text("Welcome to SyncGram Alerts! Use /subscribe to start receiving call alerts.")
+    await update.message.reply_text("Welcome to AlertsBySyncGram! Use /subscribe to start receiving call alerts.")
 
 async def subscribe(update: Update, context: CallbackContext):
     logger.info("Received /subscribe command from user: %s", update.effective_user.id)
@@ -22,8 +23,6 @@ async def handle_phone(update: Update, context: CallbackContext):
     logger.info("Received phone number %s from user: %s", phone_number, telegram_id)
     
     db = SessionLocal()
-    
-    # Create or update the user record
     user = db.query(User).filter(User.telegram_id == telegram_id).first()
     if not user:
         logger.info("User %s not found, creating new record.", telegram_id)
@@ -35,7 +34,6 @@ async def handle_phone(update: Update, context: CallbackContext):
         user.phone_number = phone_number
         db.commit()
     
-    # Subscribe the user to the current group
     chat_id = str(update.message.chat.id)
     group = db.query(Group).filter(Group.telegram_group_id == chat_id).first()
     if not group:

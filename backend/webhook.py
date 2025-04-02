@@ -1,3 +1,4 @@
+# backend/webhook.py
 from fastapi import FastAPI, Request, Response
 import logging
 from backend.call_service import initiate_conference_call_with_callback
@@ -9,11 +10,6 @@ MAX_RETRIES = 3
 
 @app.post("/twilio/callback")
 async def twilio_callback(request: Request) -> Response:
-    """
-    Handles status callbacks from Twilio for conference calls.
-    If the call status is not 'completed' or 'busy', and retries are available,
-    it will re-initiate the call.
-    """
     try:
         data = await request.form()
         call_sid = data.get("CallSid")
@@ -28,21 +24,20 @@ async def twilio_callback(request: Request) -> Response:
         except ValueError:
             retry_count = 0
         
-        logger.info("Twilio callback received: Call SID %s, Status %s, Number %s, Conference %s, Retry %s",
+        logger.info("Twilio callback: Call SID %s, Status %s, Number %s, Conference %s, Retry %s",
                     call_sid, call_status, number, conference_room, retry_count)
                     
-        # If the final call status is not acceptable, and retry attempts remain, retry the call.
         if call_status not in ["completed", "busy"]:
             if retry_count < MAX_RETRIES:
                 new_retry_count = retry_count + 1
-                logger.info("Call for %s in conference %s did not complete (status: %s). Retrying (attempt %s)...",
+                logger.info("Call for %s in conference %s failed (status: %s). Retrying (attempt %s)...",
                             number, conference_room, call_status, new_retry_count)
                 new_call_sid = initiate_conference_call_with_callback(number, conference_room, message=message, retry_count=new_retry_count)
-                logger.info("Retried call for %s initiated with new Call SID: %s", number, new_call_sid)
+                logger.info("Retried call for %s with new Call SID: %s", number, new_call_sid)
             else:
-                logger.info("Max retries reached for %s. Not retrying further.", number)
+                logger.info("Max retries reached for %s. No further retry.", number)
         else:
             logger.info("Call for %s ended with acceptable status: %s", number, call_status)
     except Exception as e:
-        logger.exception("Error processing Twilio callback: %s", e)
+        logger.exception("Error in Twilio callback: %s", e)
     return Response(status_code=204)
