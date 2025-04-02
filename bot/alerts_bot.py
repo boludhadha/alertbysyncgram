@@ -7,7 +7,7 @@ from db.external_ormar_config import database  # External DB for SyncGram subscr
 from models.subscription import Subscription as SyncSubscription  # External subscription model
 from db.internal_database import SessionLocal  # Internal DB for alerts subscriptions
 from models.alert_subscription import AlertSubscription  # Internal alerts subscription model
-from backend.korapay import initiate_korapay_payment  # Korapay payment integration
+from backend.paystack import initiate_paystack_payment  # Korapay payment integration
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ async def handle_email_alerts(update: Update, context: CallbackContext):
 
     # Initiate Korapay payment.
     # Replace "https://yourdomain.com/payment_complete" with your actual redirect URL.
-    payment_link = initiate_korapay_payment(
+    payment_link = initiate_paystack_payment(
         amount=1000,
         subscription_id=new_alert_sub.id,
         redirect_url="https://yourdomain.com/payment_complete",
