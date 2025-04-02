@@ -4,22 +4,18 @@ import asyncio
 import uvicorn
 import logging
 import nest_asyncio
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
 
-# Apply nest_asyncio to allow nested event loops
+# Apply nest_asyncio so that we can run the asyncio event loop even if one is already running.
 nest_asyncio.apply()
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
-# Import database and models to ensure metadata is complete.
+# Import database setup and models (ensure all models are imported so metadata is complete).
 from db.database import engine, Base
 import models.user
 import models.group
@@ -30,7 +26,7 @@ logger.info("Creating database tables (if not already present).")
 Base.metadata.create_all(bind=engine)
 logger.info("Database tables are ready.")
 
-# Import Telegram bot components and your handlers.
+# Import Telegram bot components and our command/message handlers.
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from bot.user_commands import start, subscribe, handle_phone
 from bot.listener import handle_message

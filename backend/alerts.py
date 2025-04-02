@@ -8,7 +8,14 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+from backend.call_service import broadcast_conference_call
+
 async def process_signal(update: Update):
+    """
+    Processes an incoming signal from Telegram.
+    Retrieves the group and active subscriptions, then broadcasts a conference call
+    to all valid phone numbers.
+    """
     message_text = update.message.text
     chat_id = str(update.message.chat.id)
     chat_title = update.message.chat.title or "Unknown"
@@ -16,7 +23,7 @@ async def process_signal(update: Update):
     logger.info("Processing signal from group %s (%s) with message: %s", chat_id, chat_title, message_text)
     
     db = SessionLocal()
-    # Ensure the group exists.
+    # Retrieve or create the group record.
     group = db.query(Group).filter(Group.telegram_group_id == chat_id).first()
     if not group:
         group = Group(telegram_group_id=chat_id, name=chat_title)
@@ -24,7 +31,7 @@ async def process_signal(update: Update):
         db.commit()
         logger.info("Created new group record: %s", chat_title)
     
-    # Fetch active subscriptions.
+    # Fetch active subscriptions for the group.
     subscriptions = db.query(CallAlertSubscription).filter(
         CallAlertSubscription.group_id == group.id,
         CallAlertSubscription.active == True
@@ -32,7 +39,7 @@ async def process_signal(update: Update):
     
     logger.info("Found %d active subscriptions for group %s", len(subscriptions), chat_title)
     
-    # Gather phone numbers from subscriptions within the valid call window.
+    # Gather phone numbers that are within the valid call window.
     phone_numbers = []
     valid_subscriptions = []
     for subscription in subscriptions:
@@ -47,10 +54,8 @@ async def process_signal(update: Update):
     
     if phone_numbers:
         call_message = f"New signal from {group.name}: {message_text}"
-        # Broadcast the call to all valid phone numbers.
-        from backend.call_service import broadcast_call
-        call_sids = broadcast_call(phone_numbers, call_message)
-        # Record each call attempt.
+        # Initiate the broadcast to join all recipients to the same conference.
+        call_sids = broadcast_conference_call(phone_numbers, conference_room=group.name, wait_url=None, message=call_message)
         for subscription in valid_subscriptions:
             number = subscription.user.phone_number
             call_sid = call_sids.get(number)

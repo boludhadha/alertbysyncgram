@@ -1,4 +1,3 @@
-# backend/webhook.py
 from fastapi import FastAPI, Request, Response
 import logging
 from backend.call_service import initiate_conference_call_with_callback
@@ -10,6 +9,11 @@ MAX_RETRIES = 3
 
 @app.post("/twilio/callback")
 async def twilio_callback(request: Request) -> Response:
+    """
+    Handles status callbacks from Twilio for conference calls.
+    If the call status is not 'completed' or 'busy', and retries are available,
+    it will re-initiate the call.
+    """
     try:
         data = await request.form()
         call_sid = data.get("CallSid")
@@ -23,11 +27,11 @@ async def twilio_callback(request: Request) -> Response:
             retry_count = int(params.get("retry_count", "0"))
         except ValueError:
             retry_count = 0
-
+        
         logger.info("Twilio callback received: Call SID %s, Status %s, Number %s, Conference %s, Retry %s",
                     call_sid, call_status, number, conference_room, retry_count)
-        
-        # If the call status is not acceptable, retry.
+                    
+        # If the final call status is not acceptable, and retry attempts remain, retry the call.
         if call_status not in ["completed", "busy"]:
             if retry_count < MAX_RETRIES:
                 new_retry_count = retry_count + 1
