@@ -38,7 +38,7 @@ def initiate_paystack_payment(amount: int, subscription_id: int, callback_url: s
         "reference": reference,
         "callback_url": callback_url,
         "currency": "NGN",
-        "channels": ["card", "bank_transfer", "ussd"],
+        "channels": ["card", "bank_transfer"],
         "customer": {
             "name": customer_name,
             "email": customer_email
@@ -62,15 +62,3 @@ def initiate_paystack_payment(amount: int, subscription_id: int, callback_url: s
     except Exception as e:
         print("Exception during Paystack payment initiation:", str(e))
         return None
-
-if __name__ == "__main__":
-    # Test the Paystack integration independently.
-    # Ensure your environment variable PAYSTACK_SECRET_KEY is set before running this test.
-    test_payment_url = initiate_paystack_payment(
-        amount=1000,
-        subscription_id=123,
-        callback_url="https://yourdomain.com/payment_complete",
-        customer_email="test@example.com",
-        customer_name="Test User"
-    )
-    print("Test Payment URL:", test_payment_url)

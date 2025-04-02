@@ -94,7 +94,7 @@ async def handle_email_alerts(update: Update, context: CallbackContext):
     payment_link = initiate_paystack_payment(
         amount=1000,
         subscription_id=new_alert_sub.id,
-        redirect_url="https://yourdomain.com/payment_complete",
+        callback_url="https://t.me/SyncgramAlertBot",
         customer_email=email,
         customer_name=""  # You can also ask for and use the customer's name if desired.
     )
