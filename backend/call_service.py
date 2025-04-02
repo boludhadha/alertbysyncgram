@@ -1,35 +1,47 @@
 # backend/call_service.py
+
 import os
-import time
 from urllib.parse import urlencode
 from twilio.rest import Client
+from twilio.twiml.voice_response import VoiceResponse, Dial, Conference
 
-# Load configuration from environment variables
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "your_account_sid")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "your_auth_token")
-TWILIO_CALLER_ID = os.getenv("TWILIO_CALLER_ID", "+1234567890")
-STATUS_CALLBACK_URL = os.getenv("TWILIO_STATUS_CALLBACK_URL", "https://alertbysyncgram-production.up.railway.app/twilio/callback")
-SIP_DOMAIN = os.getenv("SIP_DOMAIN", "syncgram.sip.twilio.com")
+# Load configuration from environment variables.
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_CALLER_ID = os.getenv("TWILIO_CALLER_ID")
+STATUS_CALLBACK_URL = os.getenv("TWILIO_STATUS_CALLBACK_URL")  # Must be fully qualified (https://...)
+DEFAULT_CONFERENCE = os.getenv("DEFAULT_CONFERENCE", "AlertConferenceRoom")
+TWILIO_WAIT_URL = os.getenv("TWILIO_WAIT_URL", None)  # Optional wait URL (e.g., an MP3 file)
 
 client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-def initiate_call_with_callback(number, message, retry_count=0):
+def create_conference_twiml(conference_room, wait_url=None):
     """
-    Initiates a call via SIP trunking using a SIP URI, with a status callback URL that is
-    fully qualified and URL-encoded with query parameters.
-    
-    :param number: The phone number to call (e.g., +2348164603115)
-    :param message: The sage to be spoken via TTS
-    :param retry_count: The current retry attempt count
-    :return: The call SID if successful, otherwise None
+    Generates TwiML that dials into a conference room.
+    Optionally uses a wait_url to play an announcement or hold music until the conference starts.
     """
-    # Construct the SIP URI using the outbound number and SIP_DOMAIN.
-    # Example: sip:+2348164603115@syncgram.sip.twilio.com
-    sip_uri = f"sip:{number}@{SIP_DOMAIN}"
+    response = VoiceResponse()
+    dial = Dial()
+    if wait_url:
+        # wait_url plays audio until participants join.
+        dial.conference(conference_room, wait_url=wait_url, start_conference_on_enter=True, end_conference_on_exit=True)
+    else:
+        dial.conference(conference_room, start_conference_on_enter=True, end_conference_on_exit=True)
+    response.append(dial)
+    return str(response)
+
+def initiate_conference_call_with_callback(number, conference_room=DEFAULT_CONFERENCE, wait_url=TWILIO_WAIT_URL, message="", retry_count=0):
+    """
+    Initiates an outbound call that joins the specified conference room.
+    The call is created with a status callback URL that includes URL-encoded query parameters for tracking.
+    """
+    # Generate the TwiML for the conference call.
+    twiml = create_conference_twiml(conference_room, wait_url)
     
-    # Build query parameters for the status callback, and URL-encode them.
+    # Build query parameters for the callback URL.
     params = urlencode({
         "number": number,
+        "conference_room": conference_room,
         "message": message,
         "retry_count": retry_count
     })
@@ -37,8 +49,8 @@ def initiate_call_with_callback(number, message, retry_count=0):
     
     try:
         call = client.calls.create(
-            twiml=f'<Response><Say voice="alice">{message}</Say></Response>',
-            to=sip_uri,
+            twiml=twiml,
+            to=number,  # The phone number to call (E.164 format)
             from_=TWILIO_CALLER_ID,
             status_callback=full_status_callback,
             status_callback_event=["initiated", "ringing", "answered", "completed"],
@@ -46,27 +58,33 @@ def initiate_call_with_callback(number, message, retry_count=0):
         )
         return call.sid
     except Exception as e:
-        print(f"Failed to initiate call to {number} (SIP URI {sip_uri}): {e}")
+        print(f"Failed to initiate conference call to {number}: {e}")
         return None
 
-def broadcast_call(phone_numbers, message, retry_count=0):
+def broadcast_conference_call(phone_numbers, conference_room=DEFAULT_CONFERENCE, wait_url=TWILIO_WAIT_URL, message=""):
     """
-    Initiates outbound calls to all provided phone numbers using the SIP trunk.
-    Each call includes a status callback URL for tracking.
-    
-    :param phone_numbers: List of phone numbers (strings)
-    :param message: The message to be spoken
-    :param retry_count: The starting retry count (default is 0)
-    :return: A dictionary mapping each phone number to its call SID (or None if the call failed)
+    Initiates outbound calls to all provided phone numbers.
+    Each call connects the recipient to the same conference room.
+    Returns a dictionary mapping each phone number to its call SID (or None if the call failed).
     """
     call_sids = {}
     for number in phone_numbers:
-        # Initiate the call for each number via SIP trunking
-        call_sid = initiate_call_with_callback(number, message, retry_count)
-        call_sids[number] = call_sid
+        sid = initiate_conference_call_with_callback(number, conference_room, wait_url, message, retry_count=0)
+        call_sids[number] = sid
     return call_sids
 
-# Optionally, you can add a retry loop in this module if needed,
-# or manage retries from your webhook as described in your callback setup.
-# For now, broadcast_call() will be called by your alert processing code,
-# and if a call fails, your webhook will handle retry logic.
+# Example usage (for testing purposes):
+if __name__ == "__main__":
+    # List of phone numbers (in E.164 format) to dial.
+    phone_numbers = [
+        "+2348164603115",
+        "+1234567890",
+        "+1987654321"
+    ]
+    message = "New signal from test group: Buy"  # This is for tracking; the actual audio is generated by the TwiML.
+    conference_room = "MyAlertConference"  # Optionally override the default conference room.
+    
+    sids = broadcast_conference_call(phone_numbers, conference_room, TWILIO_WAIT_URL, message)
+    print("Broadcast initiated. Call SIDs:")
+    for number, sid in sids.items():
+        print(f"{number}: {sid}")
