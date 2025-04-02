@@ -9,8 +9,9 @@ EXTERNAL_DATABASE_URL = os.getenv("EXTERNAL_DATABASE_URL")
 EXTERNAL_DATABASE_URL = str(EXTERNAL_DATABASE_URL).replace("postgres://", "postgresql://", 1)
 
 # Create the SQLAlchemy metadata and the asynchronous Database instance.
-metadata = MetaData()
 database = Database(EXTERNAL_DATABASE_URL)
+metadata = sqlalchemy.MetaData()
+
 
 # Create an engine if needed (for synchronous operations)
 engine = create_engine(EXTERNAL_DATABASE_URL)
