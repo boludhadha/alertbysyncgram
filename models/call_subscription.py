@@ -2,6 +2,8 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from db.internal_database import Base
+from models.user import User  # Import the User model explicitly
+from models.group import Group  # Import the Group model explicitly
 
 class CallAlertSubscription(Base):
     __tablename__ = "call_alert_subscriptions"
@@ -9,11 +11,10 @@ class CallAlertSubscription(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     group_id = Column(Integer, ForeignKey("groups.id"))
-    active = Column(Boolean, default=False)  # Inactive until payment confirmation
+    active = Column(Boolean, default=False)
     call_window_start = Column(String, default="00:00")
     call_window_end = Column(String, default="23:59")
     
-    # Use fully qualified name for the User model.
-    user = relationship("models.user.User")
-    # Similarly, for the Group model, assuming it is in models/group.py.
-    group = relationship("models.group.Group")
+    # Directly reference the classes
+    user = relationship(User)
+    group = relationship(Group)

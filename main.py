@@ -22,7 +22,14 @@ logger = logging.getLogger(__name__)
 # (External DB tables are managed via ormar in models; no local DB for subscriptions here.)
 from db.internal_database import engine, Base
 
+# Import all internal models to ensure they are registered.
+import models.user        # Internal User model.
+import models.group       # Internal Group model.
+import models.call_subscription  # Internal CallAlertSubscription model.
+import models.call_log    # Internal CallLog model.
+import models.alert_subscription  # Internal AlertSubscription model.
 
+# Create all tables in the internal PostgreSQL database.
 Base.metadata.create_all(bind=engine)
 logger.info("Internal database tables created.")
 
