@@ -20,6 +20,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # (External DB tables are managed via ormar in models; no local DB for subscriptions here.)
+from db.internal_database import engine, Base
+Base.metadata.create_all(bind=engine)
+logger.info("Internal database tables created.")
 
 # Import Telegram bot handlers.
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters
