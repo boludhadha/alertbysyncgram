@@ -4,7 +4,6 @@ import databases
 
 # Get your external DB URL and ensure it starts with "postgresql://"
 EXTERNAL_DATABASE_URL = os.getenv("EXTERNAL_DATABASE_URL")
-EXTERNAL_DATABASE_URL = str(EXTERNAL_DATABASE_URL).replace("postgres://", "postgresql://", 1)
 
 database = databases.Database(EXTERNAL_DATABASE_URL)
 metadata = sqlalchemy.MetaData()

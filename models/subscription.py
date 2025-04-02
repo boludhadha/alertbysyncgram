@@ -1,11 +1,12 @@
 import datetime
+from typing import ClassVar
 import ormar
-from db.external_ormar_config import base_ormar_config
+from db.external_ormar_config import database, metadata
 
 class Subscription(ormar.Model):
-    # Use the syncgram pattern: assign ormar_config via a copy of our base configuration.
-    ormar_config = base_ormar_config.copy(tablename="subscriptions")
-    
+    # Annotate as ClassVar so it isn’t treated as a model field
+    ormar_config: ClassVar[dict] = {"metadata": metadata, "database": database, "tablename": "subscriptions"}
+
     id: int = ormar.Integer(primary_key=True, autoincrement=True)
     user_id: str = ormar.String(max_length=64)
     group_id: str = ormar.String(max_length=64)
