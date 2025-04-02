@@ -1,14 +1,13 @@
-# models/subscription.py
 import datetime
 import ormar
-from db.external_ormar_config import base_ormar_config, metadata
+from db.external_ormar_config import database, metadata
 
 class Subscription(ormar.Model):
     class Meta:
-        metadata = metadata
-        database = base_ormar_config["database"]
         tablename = "subscriptions"
-    
+        metadata = metadata
+        database = database
+
     id: int = ormar.Integer(primary_key=True, autoincrement=True)
     user_id: str = ormar.String(max_length=64)
     group_id: str = ormar.String(max_length=64)
