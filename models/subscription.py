@@ -4,7 +4,6 @@ import ormar
 from db.external_ormar_config import database, metadata
 
 class Subscription(ormar.Model):
-    # Annotate as ClassVar so it isn’t treated as a model field
     ormar_config: ClassVar[dict] = {"metadata": metadata, "database": database, "tablename": "subscriptions"}
 
     id: int = ormar.Integer(primary_key=True, autoincrement=True)
