@@ -20,7 +20,7 @@ def initiate_korapay_payment(amount: int, subscription_id: int, redirect_url: st
     endpoint = "https://api.korapay.com/merchant/api/v1/charges/initialize"
     secret_key = os.getenv("KORAPAY_SECRET_KEY")
     if not secret_key:
-        print("KORAPAY_SECRET_KEY is not set in environment.")
+        print("KORAPAY_SECRET_KEY is not st in environment.")
         return None
 
     headers = {
