@@ -8,6 +8,7 @@ from models.subscription import Subscription as SyncSubscription  # External sub
 from db.internal_database import SessionLocal  # Internal DB for alerts subscriptions
 from models.alert_subscription import AlertSubscription  # Internal alerts subscription model
 from backend.paystack import initiate_paystack_payment  # Korapay payment integration
+from bot.listener import handle_message
 
 logger = logging.getLogger(__name__)
 
@@ -146,3 +147,5 @@ def register_alerts_handlers(application):
     # Use a simple regex for email addresses (this is a basic pattern; adjust as needed).
     application.add_handler(MessageHandler(filters.Regex(r'^[\w\.-]+@[\w\.-]+\.\w+$'), handle_email_alerts))
     application.add_handler(CommandHandler("payment_success", payment_success))
+    application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+
